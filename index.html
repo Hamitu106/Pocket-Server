@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pocket Server</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #0d1117;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+header {
+    padding: 20px;
+    border-bottom: 1px solid #202630;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 25px;
+}
+
+header p {
+    margin: 7px 0 0;
+    color: #89919e;
+}
+
+main {
+    padding: 18px;
+}
+
+.create {
+    width: 100%;
+    min-height: 125px;
+    border: 1px solid #29313d;
+    border-radius: 20px;
+    background: #151b23;
+    color: white;
+    font-size: 19px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.create:active {
+    transform: scale(0.98);
+}
+
+.plus {
+    display: block;
+    font-size: 42px;
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+.title {
+    margin-top: 32px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.empty {
+    margin-top: 14px;
+    padding: 32px 18px;
+    border-radius: 18px;
+    background: #12171e;
+    text-align: center;
+    color: #8c95a3;
+    line-height: 1.6;
+}
+
+#createPage {
+    display: none;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-bottom: 1px solid #202630;
+}
+
+.back {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 13px;
+    background: #151b23;
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.pageHeader h1 {
+    margin: 0;
+    font-size: 23px;
+}
+
+.form {
+    padding: 20px 18px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 9px;
+    color: #c9d0da;
+    font-size: 15px;
+}
+
+.input {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #29313d;
+    border-radius: 14px;
+    outline: none;
+    background: #151b23;
+    color: white;
+}
+
+.input:focus {
+    border-color: #596675;
+}
+
+.section {
+    margin-top: 24px;
+}
+
+.serverTypes {
+    display: grid;
+    gap: 10px;
+}
+
+.type {
+    width: 100%;
+    padding: 17px;
+    border: 1px solid #29313d;
+    border-radius: 15px;
+    background: #151b23;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+}
+
+.type.active {
+    border-color: #ffffff;
+    background: #202733;
+}
+
+.typeName {
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.typeDescription {
+    display: block;
+    margin-top: 5px;
+    color: #89919e;
+    font-size: 13px;
+}
+
+.capacity {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #29313d;
+    border-radius: 14px;
+    background: #151b23;
+    color: white;
+}
+
+.continue {
+    width: 100%;
+    margin-top: 28px;
+    padding: 17px;
+    border: 0;
+    border-radius: 15px;
+    background: white;
+    color: #0d1117;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.continue:active {
+    transform: scale(0.98);
+}
+</style>
+</head>
+
+<body>
+
+<div id="homePage">
+
+    <header>
+        <h1>Pocket Server</h1>
+        <p>Your servers. Your device.</p>
+    </header>
+
+    <main>
+
+        <button class="create" onclick="openCreatePage()">
+            <span class="plus">+</span>
+            Create a new server
+        </button>
+
+        <div class="title">
+            My Servers
+        </div>
+
+        <div id="serverList">
+            <div class="empty">
+                You haven't created a server yet.
+                <br>
+                Your servers will appear here.
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+
+<div id="createPage">
+
+    <div class="pageHeader">
+
+        <button class="back" onclick="openHomePage()">
+            ‹
+        </button>
+
+        <h1>Create Server</h1>
+
+    </div>
+
+    <div class="form">
+
+        <div>
+            <label class="label">
+                Server name
+            </label>
+
+            <input
+                id="serverName"
+                class="input"
+                type="text"
+                placeholder="Enter server name"
+                maxlength="40"
+            >
+        </div>
+
+
+        <div class="section">
+
+            <label class="label">
+                Server type
+            </label>
+
+            <div class="serverTypes">
+
+                <button
+                    class="type active"
+                    data-type="game"
+                    onclick="selectType(this)"
+                >
+                    <span class="typeName">
+                        🎮 Game Server
+                    </span>
+
+                    <span class="typeDescription">
+                        Host multiplayer games.
+                    </span>
+                </button>
+
+
+                <button
+                    class="type"
+                    data-type="chat"
+                    onclick="selectType(this)"
+                >
+                    <span class="typeName">
+                        💬 Chat Server
+                    </span>
+
+                    <span class="typeDescription">
+                        Create a private chat server.
+                    </span>
+                </button>
+
+
+                <button
+                    class="type"
+                    data-type="web"
+                    onclick="selectType(this)"
+                >
+                    <span class="typeName">
+                        🌐 Web Server
+                    </span>
+
+                    <span class="typeDescription">
+                        Host a website or web project.
+                    </span>
+                </button>
+
+
+                <button
+                    class="type"
+                    data-type="custom"
+                    onclick="selectType(this)"
+                >
+                    <span class="typeName">
+                        🛠️ Custom Server
+                    </span>
+
+                    <span class="typeDescription">
+                        Request a server that isn't in the list.
+                    </span>
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="section">
+
+            <label class="label">
+                Maximum connections
+            </label>
+
+            <input
+                id="capacity"
+                class="capacity"
+                type="number"
+                min="1"
+                max="100"
+                value="10"
+            >
+
+        </div>
+
+
+        <button
+            class="continue"
+            onclick="createServer()"
+        >
+            Continue
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL = "https://xkyctykynlnykrzwifll.supabase.co";
+
+const SUPABASE_KEY =
+    "sb_publishable_qcARNesfiAeVLJW8Zag1Kw_66oFYzVK";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+let selectedType = "game";
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+async function loadServers() {
+
+    const serverList =
+        document.getElementById("serverList");
+
+    const { data, error } =
+        await supabaseClient
+            .from("servers")
+            .select("*")
+            .order("created_at", {
+                ascending: false
+            });
+
+    if (error) {
+
+        console.error(
+            "Failed to load servers:",
+            error
+        );
+
+        return;
+    }
+
+
+    if (!data || data.length === 0) {
+
+        serverList.innerHTML = `
+            <div class="empty">
+                You haven't created a server yet.
+                <br>
+                Your servers will appear here.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    serverList.innerHTML = data.map(function(server) {
+
+        return `
+            <div style="
+                margin-top:14px;
+                padding:18px;
+                border:1px solid #29313d;
+                border-radius:18px;
+                background:#151b23;
+            ">
+
+                <div style="
+                    font-size:18px;
+                    font-weight:bold;
+                ">
+                    ${escapeHtml(server.name)}
+                </div>
+
+                <div style="
+                    margin-top:8px;
+                    color:#89919e;
+                    font-size:14px;
+                ">
+                    ${escapeHtml(server.type)}
+                    ·
+                    ${server.max_connections}
+                    connections
+                </div>
+
+                <div style="
+                    margin-top:8px;
+                    color:#89919e;
+                    font-size:13px;
+                ">
+                    ${escapeHtml(server.server_id)}
+                </div>
+
+            </div>
+        `;
+
+    }).join("");
+}
+
+
+function openCreatePage() {
+
+    document.getElementById("homePage")
+        .style.display = "none";
+
+    document.getElementById("createPage")
+        .style.display = "block";
+
+    window.scrollTo(0, 0);
+}
+
+
+async function openHomePage() {
+
+    document.getElementById("createPage")
+        .style.display = "none";
+
+    document.getElementById("homePage")
+        .style.display = "block";
+
+    await loadServers();
+
+    window.scrollTo(0, 0);
+}
+
+
+function selectType(button) {
+
+    document.querySelectorAll(".type")
+        .forEach(function(type) {
+
+            type.classList.remove("active");
+
+        });
+
+    button.classList.add("active");
+
+    selectedType = button.dataset.type;
+}
+
+
+function generateServerId() {
+
+    const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    let result = "PS-";
+
+    for (let i = 0; i < 12; i++) {
+
+        result += characters.charAt(
+            Math.floor(
+                Math.random() * characters.length
+            )
+        );
+    }
+
+    return result;
+}
+
+
+async function sendPocketMessage(payload) {
+
+    const { error } =
+        await supabaseClient
+            .from("pocket_messages")
+            .insert([
+                {
+                    message_code: "AJSAAAJEP2N",
+                    payload: payload
+                }
+            ]);
+
+    if (error) {
+
+        console.error(
+            "Pocket Server request failed:",
+            error
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+async function createServer() {
+
+    const name =
+        document.getElementById("serverName")
+            .value
+            .trim();
+
+    const capacity =
+        parseInt(
+            document.getElementById("capacity").value,
+            10
+        );
+
+
+    if (name === "") {
+
+        alert("Please enter a server name.");
+
+        return;
+    }
+
+
+    if (
+        !Number.isInteger(capacity) ||
+        capacity < 1 ||
+        capacity > 100
+    ) {
+
+        alert(
+            "Please enter a valid maximum connection number."
+        );
+
+        return;
+    }
+
+
+    if (selectedType === "custom") {
+
+        alert(
+            "Custom Server selected.\n\n" +
+            "Your request will be handled separately."
+        );
+
+        return;
+    }
+
+
+    const serverId =
+        generateServerId();
+
+
+    const messageSent =
+        await sendPocketMessage({
+            server_id: serverId,
+            name: name,
+            type: selectedType,
+            max_connections: capacity,
+            status: "offline"
+        });
+
+
+    if (!messageSent) {
+
+        alert("Couldn't create the server.");
+
+        return;
+    }
+
+
+    document.getElementById("serverName")
+        .value = "";
+
+    document.getElementById("capacity")
+        .value = "10";
+
+
+    selectedType = "game";
+
+
+    document.querySelectorAll(".type")
+        .forEach(function(type) {
+
+            type.classList.remove("active");
+
+        });
+
+
+    document
+        .querySelector(
+            '.type[data-type="game"]'
+        )
+        .classList.add("active");
+
+
+    document.getElementById("createPage")
+        .style.display = "none";
+
+    document.getElementById("homePage")
+        .style.display = "block";
+
+
+    await loadServers();
+
+    window.scrollTo(0, 0);
+}
+
+
+loadServers();
+
+</script>
+
+</body>
+</html>
